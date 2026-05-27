@@ -1,0 +1,150 @@
+{
+  "theme": "Light Theme with Luxury Deep Purple Highlights",
+  "archetype": "Archetype 4 (Swiss & High-Contrast) + Archetype 5 (Luxury) Hybrid",
+  "reasoning": "This is an investor-facing B2B2C product. It requires the high-end, premium feel of hospitality (Luxury) for the Guest/Splash experiences, crossed with the high-contrast, data-dense clarity of a Swiss structure for the Admin/Staff panels. The brand colors are strictly adhered to, using them for structural hierarchy and emotional storytelling rather than just generic 'SaaS' branding.",
+  "typography": {
+    "fonts": {
+      "heading": "Poppins",
+      "body": "Inter"
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl font-bold tracking-tight text-[#1F1B2E]",
+      "h2": "text-2xl sm:text-3xl font-semibold tracking-tight text-[#1F1B2E]",
+      "h3": "text-xl sm:text-2xl font-semibold text-[#1F1B2E]",
+      "h4": "text-lg font-semibold text-[#1F1B2E]",
+      "body": "text-base font-normal text-[#1F1B2E] leading-relaxed",
+      "body_muted": "text-sm text-[#6B6478]",
+      "overline": "text-xs font-semibold tracking-[0.2em] uppercase text-[#7B3FBF]"
+    },
+    "anti_patterns_avoided": "Avoided center-everything alignment. Applied tight letter spacing for large headers and generous tracking for overlines. Prevented generic weight distribution by locking headings to bold/semibold."
+  },
+  "colors": {
+    "brand": {
+      "primary": "#5B2C91",
+      "secondary": "#7B3FBF",
+      "lavender": "#A78BD9",
+      "accent": "#F47B20",
+      "white": "#FFFFFF",
+      "background": "#F8F6FC",
+      "text_dark": "#1F1B2E",
+      "text_muted": "#6B6478"
+    },
+    "feedback": {
+      "success": "#22C55E",
+      "warning": "#F59E0B",
+      "danger": "#EF4444"
+    },
+    "gradients": {
+      "primary_hero": "bg-gradient-to-br from-[#5B2C91] to-[#7B3FBF]",
+      "ai_glow_mask": "bg-gradient-to-r from-[#A78BD9]/40 via-[#F47B20]/40 to-[#A78BD9]/40"
+    },
+    "shadows": {
+      "soft_purple": "shadow-[0_8px_30px_rgba(91,44,145,0.08)]",
+      "ai_glow": "drop-shadow-[0_0_12px_rgba(244,123,32,0.4)]"
+    }
+  },
+  "spacing_and_layout": {
+    "philosophy": "Generous Spacing (p-6 to p-8 internally on cards) for Guest app to feel luxurious. Tight Control Room Grid for Staff/Admin to maximize scanability.",
+    "guest_app": {
+      "container": "w-full h-[844px] max-w-[390px] rounded-[40px] border-[8px] border-black bg-[#F8F6FC] overflow-hidden relative shadow-2xl",
+      "grid": "flex flex-col gap-6 p-6"
+    },
+    "staff_app": {
+      "container": "w-full h-[844px] max-w-[390px] rounded-[40px] border-[8px] border-black bg-[#F8F6FC] overflow-hidden relative shadow-2xl",
+      "grid": "flex flex-col gap-4 p-4"
+    },
+    "admin_dashboard": {
+      "container": "w-full min-h-screen bg-[#F8F6FC] p-8",
+      "grid": "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6"
+    },
+    "bento_rules": "Dashboard uses 'Control Room' dense mode. Main KPI cards are col-span-1. Charts span 2 or 3 columns."
+  },
+  "surface_strategies": {
+    "cards": "bg-white rounded-[20px] shadow-[0_8px_30px_rgba(91,44,145,0.08)] border border-[#A78BD9]/20 p-6",
+    "buttons_primary": "bg-[#F47B20] text-white rounded-[12px] px-6 py-3 font-semibold hover:bg-[#d66718] transition-colors focus:ring-2 focus:ring-[#F47B20]/50",
+    "buttons_secondary": "bg-[#F8F6FC] text-[#5B2C91] border border-[#5B2C91]/20 rounded-[12px] px-6 py-3 font-semibold hover:bg-[#5B2C91] hover:text-white transition-all",
+    "ai_badges": "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-[#5B2C91]/10 to-[#F47B20]/10 border border-[#F47B20]/30 text-xs font-semibold text-[#5B2C91]",
+    "headers": "sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-[#A78BD9]/20"
+  },
+  "motion_and_interactions": {
+    "ai_sparkle": "Animate ✨ SVG icon with a slow pulse and rotation. Use a moving background gradient (Tracing Beam style) for 'AI-picked' cards.",
+    "hover_states": "Cards lift slightly (-translate-y-1) and increase shadow depth.",
+    "transitions": "Use 'transition-all duration-300 ease-out' globally."
+  },
+  "component_specs": {
+    "splash_screen": {
+      "description": "Viewer gateway to the 3 apps.",
+      "layout": "Full screen bg-[#1F1B2E]. Huge centered brand wordmark. 3 large interactive cards (Guest, Staff, Admin) to select demo path. 'Play Investor Demo' floating action button to auto-walk."
+    },
+    "guest_app": {
+      "Home": "Welcome text over a subtle #5B2C91 gradient header. 'My Requests' tracker showing SLA countdown. Proactive Nudge popup (glassmorphism overlay).",
+      "AI_Concierge": "Chat interface. Guest messages grey, AI messages #F8F6FC with #5B2C91 text. Pulse animation on mic.",
+      "Recommendations": "Horizontal scroll of cards featuring Spa/Restaurant images. ✨ AI-picked badges on top corner."
+    },
+    "staff_app": {
+      "Dashboard": "Top 'Next-Best-Action' hero card (bg-gradient-to-br from-[#5B2C91] to-[#7B3FBF] text-white).",
+      "Tasks": "List with priority scores (Red/Amber/Green). AI-predicted ETA text.",
+      "Copilot": "Checklist UI automatically generating step-by-step SOPs."
+    },
+    "admin_dashboard": {
+      "GM_Digest": "Top full-width card. Plain English AI summary. Left aligned text.",
+      "KPIs": "4 bento boxes (Occupancy, SLA, CSAT, Tasks).",
+      "Charts": "Request volume area chart (fill: #A78BD9), Department donut, Complaint horizontal bar.",
+      "Anomaly": "Card with red warning text and an orange 'Recommended Actions' button."
+    }
+  },
+  "image_assets": {
+    "logo": [
+      {
+        "url": "https://customer-assets.emergentagent.com/job_fbce37e1-6519-46db-a7db-91ba6c43ef94/artifacts/y9r9hl4w_Inplass%20Logo.png",
+        "category": "Brand",
+        "description": "iNPLASS White Wordmark with orange 'i'"
+      }
+    ],
+    "hotel_interiors": [
+      {
+        "url": "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzB8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBob3RlbCUyMGludGVyaW9yfGVufDB8fHx8MTc3OTg1Mjg0NHww&ixlib=rb-4.1.0&q=85",
+        "category": "Backgrounds / Guest App",
+        "description": "Luxury bedroom - Use for Room Request visual or Guest App Hero"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1585418694458-dc80a5c20294?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzB8MHwxfHNlYXJjaHwzfHxsdXh1cnklMjBob3RlbCUyMGludGVyaW9yfGVufDB8fHx8MTc3OTg1Mjg0NHww&ixlib=rb-4.1.0&q=85",
+        "category": "Backgrounds",
+        "description": "Elegant lobby / lounge area"
+      }
+    ],
+    "people": [
+      {
+        "url": "https://images.unsplash.com/photo-1556474835-b0f3ac40d4d1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzOTB8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMHRyYXZlbGVyJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzc5ODUyODQ4fDA&ixlib=rb-4.1.0&q=85",
+        "category": "Avatars",
+        "description": "Guest 'John' (Business Traveler)"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1677129666186-d29eba893fe3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDV8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBob3RlbCUyMGNvbmNpZXJnZXxlbnwwfHx8fDE3Nzk4NTI4NDh8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Avatars",
+        "description": "Staff 'Linda' (Concierge/Staff)"
+      }
+    ],
+    "amenities": [
+      {
+        "url": "https://images.unsplash.com/photo-1741522509438-a120c0bb5e88?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBzcGElMjBtYXNzYWdlfGVufDB8fHx8MTc3OTg1Mjg1M3ww&ixlib=rb-4.1.0&q=85",
+        "category": "Recommendations",
+        "description": "Luxury Spa Massage"
+      },
+      {
+        "url": "https://images.pexels.com/photos/7243886/pexels-photo-7243886.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "Recommendations",
+        "description": "Gourmet dining plating"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "STRICT ADHERENCE TO BRAND COLORS: The palette defined above must be used exactly. Do not invent new gradients or off-brand colors.",
+    "LAYOUT EXECUTION: Render the Splash Screen as the root (/). It should contain a showcase layout featuring two iPhone frames (for Guest and Staff apps) and a Macbook/Monitor frame (for Admin Panel). Ensure the frames look realistic.",
+    "INTERACTIVITY: Implement the 'Play Investor Demo' functionality. This should trigger a sequential, auto-scrolling tour using Framer Motion to step through the Cross-App Demo Flow: Guest (types request) -> Staff (receives next-best-action) -> Admin (Dashboard anomaly updates).",
+    "COMPONENT USAGE: Use Shadcn UI primitives for forms, tables, tabs, and modals. For high-fidelity cards and interactive visuals (especially on the Guest app), build custom HTML/Tailwind components to ensure they feel luxurious and non-templated.",
+    "DATA VISUALIZATION: Use Recharts for the Admin dashboard. Customize chart tooltips and gridlines to be minimal and match the #5B2C91 / #A78BD9 colors.",
+    "TESTING: Every interactive element MUST have a 'data-testid' attribute (e.g., data-testid='guest-chat-input').",
+    "PILL SHAPES: Primary CTA buttons must be pill-shaped or heavily rounded (12px minimum radius) as specified by brand guidelines."
+  ]
+}
