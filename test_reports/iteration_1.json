@@ -1,0 +1,25 @@
+{
+  "summary": "Comprehensive frontend smoke + interaction testing of the iNPLASS 3-app investor prototype. Splash, Guest (/guest), Staff (/staff), Admin (/admin), and Demo Mode (/demo) were all exercised end-to-end with Playwright. No backend testing performed (per request - frontend-only prototype with mocked AI). No console/runtime errors observed. All 17 listed feature checkpoints passed.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "GuestApp.jsx is 490+ lines and holds 5 screens in one file. Consider splitting per-screen into separate files under /components/guest/ for maintainability (e.g., GuestHome.jsx, GuestChat.jsx, GuestRequests.jsx, GuestProfile.jsx). Same suggestion applies if StaffApp.jsx exceeds 700 lines.",
+    "copilot-input and copilot-send are conditionally rendered only AFTER the copilot panel is opened via copilot-btn. This is intentional UX, but the spec ('Copilot chat input [copilot-input] and send [copilot-send] work') should clarify the open-first requirement for future automation.",
+    "demo-play data-testid is only mounted when the demo is paused; demo-stop is mounted when playing. Both share a control slot. Acceptable, but worth documenting that they are mutually exclusive in DOM.",
+    "All AI responses are client-side scripted (acknowledged as mocked). Make sure investor-facing demo banner clearly says 'Prototype - Mock AI' on each surface to set expectation. Currently the splash header reads 'INVESTOR PROTOTYPE - V1.0' which is sufficient."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "100%"},
+  "test_credentials": "none required",
+  "seed_data_creation": "none - all data is in-memory mockData.js",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Verified results:\n- Splash (/) : iNPLASS logo, 'AI orchestrates every guest moment / Let's Hotel' hero, Play Investor Demo button, all 3 splash-cards (guest/staff/admin) render. Skip-to-Admin link also present.\n- Guest (/guest): All 4 bottom-nav tabs work (home/requests/chat/profile). Chat tab reveals guest-chat-input + guest-mic-btn (orange pulsing) + guest-send-btn + guest-lang-toggle (EN dropdown with ES/FR/AR/中文). Send adds user msg + AI follow-up reply. Requests tab shows status pills (Completed / In Progress). AI Nudge popup auto-appears after ~3.5s with all 4 testids and close works. Recommendations modal opens via guest-show-recs-btn and closes via recs-close.\n- Staff (/staff): All 4 tabs (dashboard/list/map/handover) work. Dashboard shows KPI 12/2/18, staff-next-best-action card, ranked task list. Clicking staff-task-T-401 opens task detail with 5 checklist items (checklist-1..5), copilot-btn, task-complete-btn. Clicking copilot-btn reveals copilot-input + copilot-send and chat works. Route tab shows 'Bundle 4 tasks' insight. Handover tab shows handover-share button and KPI bullets.\n- Admin (/admin): Sidebar nav, GM Daily Digest, all 4 KPI cards (occupancy/avg-sla/guest-satisfaction/active-tasks), 3 drill cards (rootcause/simulation/forecast) + gm-rootcause-btn all render. admin-nav-insights and admin-nav-requests both navigate correctly. Simulation drill view shows all 4 sliders (sim-hk-inc/dec, sim-rs-inc/dec) and admin-drill-back returns to dashboard. LiveOps shows liveops-search.\n- Demo (/demo): Auto-advances through steps (verified step content changes after ~6s). demo-restart, demo-stop, demo-back are visible during playback; demo-play is only visible when paused (correct mutually-exclusive behaviour with demo-stop).\n- No console errors, no pageerrors, no broken images observed during the full flow.",
+  "rca_of_the_issue": "N/A - no bugs found"
+}

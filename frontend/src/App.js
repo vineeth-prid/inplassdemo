@@ -1,54 +1,44 @@
-import { useEffect } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import { DemoProvider } from "./context/DemoContext";
+import Splash from "./components/Splash";
+import GuestApp from "./components/guest/GuestApp";
+import StaffApp from "./components/staff/StaffApp";
+import AdminApp from "./components/admin/AdminApp";
+import DemoMode from "./components/DemoMode";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
+function GuestPage() {
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
-
-function App() {
-  return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+    <div className="min-h-screen bg-[#0c0a14] py-10 flex items-start justify-center">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0c0a14] via-[#1F1B2E] to-[#5B2C91]/40" />
+      <GuestApp />
     </div>
   );
 }
 
-export default App;
+function StaffPage() {
+  return (
+    <div className="min-h-screen bg-[#0c0a14] py-10 flex items-start justify-center">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0c0a14] via-[#1F1B2E] to-[#5B2C91]/40" />
+      <StaffApp />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <div className="App">
+      <DemoProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Splash />} />
+            <Route path="/guest" element={<GuestPage />} />
+            <Route path="/staff" element={<StaffPage />} />
+            <Route path="/admin" element={<AdminApp />} />
+            <Route path="/demo" element={<DemoMode />} />
+          </Routes>
+        </BrowserRouter>
+      </DemoProvider>
+    </div>
+  );
+}
