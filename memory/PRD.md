@@ -29,13 +29,28 @@ Build a high-fidelity, investor-ready prototype for **iNPLASS — The NextGen Ho
 
 ## What's Been Implemented (2026-02)
 - **Splash (/)** — Logo, "AI orchestrates every guest moment / Let's Hotel" hero, Play Investor Demo CTA, 3 app entry cards.
-- **Guest App (/guest)** — Home (welcome + 2×2 quick actions + featured carousel), AI Concierge chat (multilingual toggle EN/ES/FR/AR/中文, voice mic pulse, auto-split tickets in demo), Requests tracker (3 cards w/ SLA + progress), Recommendations modal (itinerary + restaurants + commute), Profile, and a proactive AI rain-nudge popup.
-- **Staff App (/staff)** — Dashboard (KPI 12/2/18 + Next-Best-Action hero card + AI-ranked queue), Task Queue with filter chips, Task Detail bottom-sheet w/ auto checklist + photo QA + AI Copilot chat, Route map with optimized path + bundling insight, AI-generated Shift Handover summary.
-- **Admin Dashboard (/admin)** — Sidebar nav, GM Daily Digest hero, 4 KPI cards, live request volume area chart, department donut, complaint horizontal bar, Floor 4 AC pattern callout, drill cards to Root Cause, What-If Simulation (sliders), Forecast Heatmap, Live Operations table with search + filters + SLA color rows, AI Insights with anomalies + recommended actions.
-- **Cross-App Demo (/demo)** — Two scaled phone frames + laptop frame side-by-side, 8-phase scripted storyline (John types → AI splits → Linda gets task → GM dashboard updates → task complete → tracker updates → pattern surfaces), auto-advances with spotlight focus animation, restart/pause/play controls.
+- **Guest App (/guest)** — Home, AI Concierge chat (multilingual + voice mic + auto-split in demo), Requests tracker, Recommendations modal, Profile, proactive rain-nudge popup.
+- **Staff App (/staff)** — Dashboard with KPIs + Next-Best-Action + AI-ranked queue, Task Queue with filters, polymorphic Task Detail, Route map, AI shift handover.
+- **Admin Dashboard (/admin)** — Sidebar nav, GM Daily Digest, 4 KPI cards, charts, anomaly callouts, drill cards to RCA / Simulation / Forecast, Live Operations table, AI Insights.
+- **Cross-App Demo (/demo)** — Two phones + laptop side-by-side, 8-phase auto-walking storyline with spotlight focus.
+
+## Iteration 2 Changes (2026-02)
+- **Guest** — "Ticket Raised!" success modal with green check + summary appears after sending a concierge message, then auto-redirects to My Requests after ~2.4s.
+- **Staff** — Department badge now on every task card. Task Detail is polymorphic per `task.kind`:
+  - **Towel / Water** → "Items to deliver" + 3-step Delivery flow.
+  - **Food** → "Order details" + 4-step Service flow.
+  - **Checkout** → 7-item Checkout Checklist (mini-bar / damage / keys / folio / luggage / PMS).
+  - **AC / Maintenance** → 5-step AI Diagnostic Checklist.
+  - **Wi-Fi** → 3-step Quick Fix steps.
+- **Staff "Raise for Guest"** flow: floating FAB on Dashboard + Queue → bottom sheet with room picker, request-type chips (Towel / Water / Food / Maint / Amenity / Other) and note → submits a new task into the queue + green success toast.
+- **Admin sidebar** trimmed to 5 items (removed Rooms + Settings).
+- **Admin Staff** view rebuilt as **AI Performance Pulse** — per-staff cards with SLA / CSAT / burnout risk / sentiment dot / AI coaching note + Coach button.
+- **Admin Analytics** view rebuilt as **AI Narrative Insights** — 3 confidence-scored narrative cards, Revenue × CSAT composed chart, Guest journey funnel, stacked sentiment trend.
+- **LiveOps** rows updated to match new task taxonomy (Towel Request / Water Bottle / Food Placed / Checkout).
 
 ## Testing
-- `testing_agent_v3` iteration 1: **frontend 100% pass**, 0 bugs, 17/17 feature checkpoints verified, no console errors.
+- `testing_agent_v3` iteration 1: **frontend 100% pass**, 17/17 checkpoints.
+- `testing_agent_v3` iteration 2: **frontend 100% pass**, 9/9 checkpoints, 0 bugs.
 
 ## Prioritized Backlog
 - **P1** Optional: replace scripted concierge with real Emergent LLM call (Claude/GPT) for live Q&A demos.
