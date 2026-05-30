@@ -51,7 +51,7 @@ export default function Splash() {
         </div>
         <div className="hidden md:flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-white/60">
           <Sparkles className="w-3.5 h-3.5 text-[#F47B20]" />
-          Investor Prototype · v1.0
+          Prototype · v1.0
         </div>
       </header>
 
@@ -82,7 +82,7 @@ export default function Splash() {
             >
               <span className="flex items-center gap-3">
                 <PlayCircle className="w-6 h-6" />
-                Play Investor Demo
+                Play Demo
               </span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
