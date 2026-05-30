@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, ListChecks, Users, BedDouble, LineChart, Brain, Settings,
-  Bell, Search, ChevronLeft, Sparkles, Calendar, MoveLeft,
+  LayoutDashboard, ListChecks, Users, LineChart, Brain,
+  Bell, Search, ChevronLeft, Sparkles, Calendar, MoveLeft, BedDouble,
 } from "lucide-react";
 import { LOGO_URL } from "../../data/mockData";
 
@@ -13,15 +13,15 @@ import RootCause from "./RootCause";
 import Simulation from "./Simulation";
 import Forecast from "./Forecast";
 import LiveOps from "./LiveOps";
+import StaffView from "./StaffView";
+import Analytics from "./Analytics";
 
 const NAV = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "requests", label: "Requests", icon: ListChecks },
   { key: "staff", label: "Staff", icon: Users },
-  { key: "rooms", label: "Rooms", icon: BedDouble },
   { key: "analytics", label: "Analytics", icon: LineChart },
   { key: "insights", label: "AI Insights", icon: Brain },
-  { key: "settings", label: "Settings", icon: Settings },
 ];
 
 export default function AdminApp({ embedded = false }) {
@@ -36,6 +36,8 @@ export default function AdminApp({ embedded = false }) {
     if (view === "dashboard") return <GMDigest onDrill={setDrill} />;
     if (view === "insights") return <Insights onDrill={setDrill} />;
     if (view === "requests") return <LiveOps />;
+    if (view === "staff") return <StaffView />;
+    if (view === "analytics") return <Analytics />;
     return <Placeholder label={view} />;
   };
 

@@ -134,7 +134,7 @@ export const STAFF_TASKS = [
     id: "T-401",
     room: "412",
     guest: "John Kelly",
-    type: "Extra Towels",
+    type: "Towel Request",
     dept: "Housekeeping",
     priority: 96,
     priorityLevel: "high",
@@ -142,22 +142,79 @@ export const STAFF_TASKS = [
     etaMin: 6,
     distance: "6 min walk",
     vip: true,
+    kind: "delivery",
+    details: {
+      items: [
+        { name: "Bath towels", qty: 2 },
+        { name: "Hand towels", qty: 1 },
+      ],
+      pickup: "Linen room · Floor 4",
+      note: "Guest prefers Egyptian cotton. VIP courtesy mat included.",
+    },
   },
   {
     id: "T-402",
-    room: "415",
+    room: "305",
     guest: "Sarah Chen",
-    type: "Turndown Service",
+    type: "Water Bottle",
     dept: "Housekeeping",
-    priority: 82,
+    priority: 72,
     priorityLevel: "med",
-    slaMin: 25,
-    etaMin: 12,
-    distance: "Same floor",
+    slaMin: 20,
+    etaMin: 9,
+    distance: "Floor 3",
     vip: false,
+    kind: "delivery",
+    details: {
+      items: [
+        { name: "Still water 500ml", qty: 2 },
+        { name: "Sparkling water 500ml", qty: 1 },
+      ],
+      pickup: "F&B mini-bar pantry · Floor 3",
+      note: "Chilled. Add lemon wedges on tray.",
+    },
   },
   {
     id: "T-403",
+    room: "208",
+    guest: "Carlos M.",
+    type: "Food Placed",
+    dept: "Room Service",
+    priority: 84,
+    priorityLevel: "high",
+    slaMin: 18,
+    etaMin: 7,
+    distance: "Floor 2",
+    vip: false,
+    kind: "food",
+    details: {
+      order: "Truffle Risotto · Caesar Salad · Sparkling water",
+      table: "By window · Tray service",
+      ticket: "RS-#21043",
+      diet: "Lactose-free cheese substitute",
+      pickup: "Main kitchen pass · Hot hold #2",
+    },
+  },
+  {
+    id: "T-404",
+    room: "510",
+    guest: "Yuki T.",
+    type: "Checkout",
+    dept: "Front Desk",
+    priority: 90,
+    priorityLevel: "high",
+    slaMin: 25,
+    etaMin: 12,
+    distance: "Floor 5",
+    vip: true,
+    kind: "checkout",
+    details: {
+      folio: "$1,248.40 (3 nights)",
+      keys: "2 cards to recover",
+    },
+  },
+  {
+    id: "T-405",
     room: "412",
     guest: "John Kelly",
     type: "AC Noisy",
@@ -168,33 +225,70 @@ export const STAFF_TASKS = [
     etaMin: 18,
     distance: "Floor 4",
     vip: true,
+    kind: "diagnostic",
   },
   {
-    id: "T-404",
-    room: "208",
-    guest: "Carlos M.",
-    type: "Room Service Tray Pickup",
-    dept: "Room Service",
-    priority: 54,
-    priorityLevel: "low",
-    slaMin: 45,
-    etaMin: 8,
-    distance: "Floor 2",
-    vip: false,
-  },
-  {
-    id: "T-405",
+    id: "T-406",
     room: "611",
     guest: "Aisha N.",
     type: "Wi-Fi Reset",
     dept: "Maintenance",
-    priority: 78,
+    priority: 64,
     priorityLevel: "med",
     slaMin: 20,
     etaMin: 11,
     distance: "Floor 6",
     vip: false,
+    kind: "diagnostic_short",
   },
+];
+
+// Per-kind sub-task templates
+export const DELIVERY_STEPS = [
+  { id: 1, text: "Pickup items from supply" },
+  { id: 2, text: "Confirm guest occupancy via PMS" },
+  { id: 3, text: "Deliver to room · photo QA" },
+];
+
+export const FOOD_STEPS = [
+  { id: 1, text: "Collect tray from hot hold" },
+  { id: 2, text: "Verify dietary substitutions" },
+  { id: 3, text: "Place table-side, lift cloche" },
+  { id: 4, text: "Photo QA + guest signature" },
+];
+
+export const CHECKOUT_CHECKLIST = [
+  { id: 1, text: "Verify guest identity & folio", done: true },
+  { id: 2, text: "Mini-bar inventory scan", done: false },
+  { id: 3, text: "Room damage walk-through", done: false },
+  { id: 4, text: "Recover room keycards (2)", done: false },
+  { id: 5, text: "Settle balance · email receipt", done: false },
+  { id: 6, text: "Offer luggage assistance + cab", done: false },
+  { id: 7, text: "Update PMS · release room to HK", done: false },
+];
+
+export const WIFI_STEPS = [
+  { id: 1, text: "Power-cycle in-room router", done: false },
+  { id: 2, text: "Test 5GHz + 2.4GHz signal", done: false },
+  { id: 3, text: "Re-bind guest MAC on captive portal", done: false },
+];
+
+export const RAISE_REQUEST_TYPES = [
+  { key: "towel", label: "Towel / Linen", dept: "Housekeeping", kind: "delivery" },
+  { key: "water", label: "Water / Beverage", dept: "Housekeeping", kind: "delivery" },
+  { key: "food", label: "Food Order", dept: "Room Service", kind: "food" },
+  { key: "maint", label: "Maintenance", dept: "Maintenance", kind: "diagnostic_short" },
+  { key: "amenity", label: "Amenity", dept: "Housekeeping", kind: "delivery" },
+  { key: "other", label: "Other", dept: "Concierge", kind: "delivery" },
+];
+
+export const ROOMS_FOR_RAISE = [
+  { room: "208", guest: "Carlos M." },
+  { room: "305", guest: "Sarah Chen" },
+  { room: "412", guest: "John Kelly" },
+  { room: "510", guest: "Yuki T." },
+  { room: "611", guest: "Aisha N." },
+  { room: "702", guest: "Hassan O." },
 ];
 
 export const AC_CHECKLIST = [
@@ -272,11 +366,12 @@ export const ANOMALIES = [
 ];
 
 export const LIVE_OPS = [
-  { room: "412", guest: "John Kelly", req: "Extra Towels", dept: "Housekeeping", assignee: "Maria L.", sla: "8m", status: "In Progress", priority: 96 },
+  { room: "412", guest: "John Kelly", req: "Towel Request", dept: "Housekeeping", assignee: "Maria L.", sla: "8m", status: "In Progress", priority: 96 },
   { room: "412", guest: "John Kelly", req: "AC Noise Fix", dept: "Maintenance", assignee: "Robert K.", sla: "18m", status: "Assigned", priority: 88 },
-  { room: "611", guest: "Aisha N.", req: "Wi-Fi Reset", dept: "Maintenance", assignee: "Robert K.", sla: "12m", status: "In Progress", priority: 78 },
-  { room: "208", guest: "Carlos M.", req: "Tray Pickup", dept: "Room Service", assignee: "Diego P.", sla: "32m", status: "Queued", priority: 54 },
-  { room: "510", guest: "Yuki T.", req: "Spa Booking", dept: "Concierge", assignee: "Anna F.", sla: "—", status: "Completed", priority: 40 },
+  { room: "305", guest: "Sarah Chen", req: "Water Bottle", dept: "Housekeeping", assignee: "Sam O.", sla: "12m", status: "Assigned", priority: 72 },
+  { room: "208", guest: "Carlos M.", req: "Food Placed", dept: "Room Service", assignee: "Diego P.", sla: "7m", status: "In Progress", priority: 84 },
+  { room: "510", guest: "Yuki T.", req: "Checkout", dept: "Front Desk", assignee: "Anna F.", sla: "12m", status: "In Progress", priority: 90 },
+  { room: "611", guest: "Aisha N.", req: "Wi-Fi Reset", dept: "Maintenance", assignee: "Robert K.", sla: "11m", status: "Queued", priority: 64 },
   { room: "203", guest: "Hassan O.", req: "Bathroom Leak", dept: "Maintenance", assignee: "Unassigned", sla: "2m", status: "At Risk", priority: 99 },
 ];
 
@@ -296,4 +391,101 @@ export const LANGUAGES = [
   { code: "FR", label: "Français" },
   { code: "AR", label: "العربية" },
   { code: "中文", label: "中文" },
+];
+
+// Admin · Staff performance (AI-derived)
+export const STAFF_PERF = [
+  {
+    name: "Linda Martinez",
+    role: "Housekeeping Supervisor",
+    dept: "Housekeeping",
+    avatar: "https://images.unsplash.com/photo-1677129666186-d29eba893fe3?w=200&q=80&auto=format&fit=crop",
+    completed: 18, sla: 97, csat: 4.9, burnout: 22, sentiment: "warm",
+    aiNote: "Top performer this week. Consider rotating to onboarding Mentor role.",
+  },
+  {
+    name: "Maria L.",
+    role: "Housekeeper",
+    dept: "Housekeeping",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80&auto=format&fit=crop",
+    completed: 24, sla: 94, csat: 4.7, burnout: 58, sentiment: "tired",
+    aiNote: "Burnout risk rising (+18% vs 7d). Suggest shorter floor allocation tomorrow.",
+  },
+  {
+    name: "Robert K.",
+    role: "Maintenance Tech",
+    dept: "Maintenance",
+    avatar: "https://images.unsplash.com/photo-1556157382-97eda2d62296?w=200&q=80&auto=format&fit=crop",
+    completed: 11, sla: 88, csat: 4.5, burnout: 36, sentiment: "neutral",
+    aiNote: "HVAC ticket throughput +30%. Pair with junior tech for upcoming Floor 4 preventive.",
+  },
+  {
+    name: "Diego P.",
+    role: "Room Service Runner",
+    dept: "Room Service",
+    avatar: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&q=80&auto=format&fit=crop",
+    completed: 15, sla: 92, csat: 4.6, burnout: 28, sentiment: "warm",
+    aiNote: "Average delivery 8% faster than dept avg. Strong candidate for VIP track.",
+  },
+  {
+    name: "Anna F.",
+    role: "Concierge",
+    dept: "Concierge",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80&auto=format&fit=crop",
+    completed: 9, sla: 99, csat: 4.95, burnout: 18, sentiment: "warm",
+    aiNote: "Driver of +0.3 CSAT this week. Spotlight in shift huddle.",
+  },
+  {
+    name: "Sam O.",
+    role: "Housekeeper",
+    dept: "Housekeeping",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=80&auto=format&fit=crop",
+    completed: 19, sla: 81, csat: 4.2, burnout: 71, sentiment: "stressed",
+    aiNote: "3 late tasks today. AI suggests 1:1 coaching + lighter Floor 7 load.",
+  },
+];
+
+// Admin · Analytics
+export const REVENUE_BY_DAY = [
+  { day: "Mon", rev: 18400, csat: 4.4 },
+  { day: "Tue", rev: 19200, csat: 4.5 },
+  { day: "Wed", rev: 21100, csat: 4.6 },
+  { day: "Thu", rev: 22800, csat: 4.7 },
+  { day: "Fri", rev: 27300, csat: 4.7 },
+  { day: "Sat", rev: 31600, csat: 4.8 },
+  { day: "Sun", rev: 24900, csat: 4.6 },
+];
+
+export const SENTIMENT_TREND = [
+  { week: "W-4", positive: 62, neutral: 28, negative: 10 },
+  { week: "W-3", positive: 65, neutral: 27, negative: 8 },
+  { week: "W-2", positive: 68, neutral: 25, negative: 7 },
+  { week: "W-1", positive: 71, neutral: 23, negative: 6 },
+  { week: "Now", positive: 74, neutral: 21, negative: 5 },
+];
+
+export const FUNNEL = [
+  { stage: "Bookings", value: 412 },
+  { stage: "Check-ins", value: 387 },
+  { stage: "In-stay requests", value: 612 },
+  { stage: "Repeat-intent (AI scored)", value: 218 },
+  { stage: "Loyalty signups", value: 94 },
+];
+
+export const ANALYTICS_NARRATIVES = [
+  {
+    title: "Why CSAT is up 0.3pts",
+    body: "Faster towel & water delivery on Floors 3–5 cut median fulfillment time from 18m → 11m. The improvement correlates with a 14% rise in 5-star post-stay reviews.",
+    confidence: 94,
+  },
+  {
+    title: "Revenue opportunity flagged",
+    body: "23% of in-stay guests show high spa-intent signals but no booking. AI projects a $4,200/wk uplift with a targeted Tuesday-Wednesday push notification.",
+    confidence: 87,
+  },
+  {
+    title: "Risk · Sunday afternoon dip",
+    body: "Recurring 9-week pattern: SLA drops 6% between 2–5 PM on Sundays due to overlapping shift handovers. Stagger by 30 min to recover.",
+    confidence: 91,
+  },
 ];

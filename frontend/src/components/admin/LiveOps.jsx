@@ -84,7 +84,7 @@ export default function LiveOps() {
             </thead>
             <tbody>
               {filtered.map((r, i) => {
-                const isNew = newRowFlash && r.room === "412" && r.req === "Extra Towels";
+                const isNew = newRowFlash && r.room === "412" && r.req === "Towel Request";
                 return (
                   <motion.tr
                     key={`${r.room}-${i}`}

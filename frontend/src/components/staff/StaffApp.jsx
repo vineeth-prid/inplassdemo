@@ -2,12 +2,17 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  Home, ListChecks, Map, FileText, User, ChevronLeft, ChevronRight, Bell,
+  Home, ListChecks, Map, FileText, ChevronLeft, ChevronRight, Bell,
   CheckCircle2, Circle, Camera, Clock, MapPin, Zap, ArrowRight, X, MessageSquare, Send,
+  Plus, ClipboardEdit, Package, Utensils, Wrench, BedDouble,
 } from "lucide-react";
 import { PhoneFrame } from "../PhoneFrame";
 import { AIBadge, SparkleDot } from "../SparkleBadge";
-import { STAFF, STAFF_TASKS, AC_CHECKLIST, HANDOVER_BULLETS } from "../../data/mockData";
+import {
+  STAFF, STAFF_TASKS, AC_CHECKLIST, HANDOVER_BULLETS,
+  DELIVERY_STEPS, FOOD_STEPS, CHECKOUT_CHECKLIST, WIFI_STEPS,
+  RAISE_REQUEST_TYPES, ROOMS_FOR_RAISE,
+} from "../../data/mockData";
 import { useDemo } from "../../context/DemoContext";
 
 const TABS = [
@@ -17,9 +22,28 @@ const TABS = [
   { key: "handover", label: "Handover", icon: FileText },
 ];
 
+const DEPT_COLOR = {
+  Housekeeping: "bg-[#5B2C91]/12 text-[#5B2C91] border-[#5B2C91]/25",
+  Maintenance: "bg-[#F47B20]/12 text-[#F47B20] border-[#F47B20]/30",
+  "Room Service": "bg-[#7B3FBF]/12 text-[#7B3FBF] border-[#7B3FBF]/25",
+  "Front Desk": "bg-[#A78BD9]/15 text-[#5B2C91] border-[#A78BD9]/35",
+  Concierge: "bg-[#22C55E]/12 text-[#22C55E] border-[#22C55E]/25",
+};
+
+const KIND_ICON = {
+  delivery: Package,
+  food: Utensils,
+  diagnostic: Wrench,
+  diagnostic_short: Wrench,
+  checkout: BedDouble,
+};
+
 export default function StaffApp({ embedded = false, scale = 1 }) {
   const [tab, setTab] = useState("dashboard");
   const [detailTask, setDetailTask] = useState(null);
+  const [showRaise, setShowRaise] = useState(false);
+  const [tasks, setTasks] = useState(STAFF_TASKS);
+  const [toast, setToast] = useState(null);
   const navigate = useNavigate();
   const { phase, running } = useDemo();
 
@@ -28,6 +52,17 @@ export default function StaffApp({ embedded = false, scale = 1 }) {
     if (phase === 3) setTab("dashboard");
     if (phase === 5) setTab("list");
   }, [phase, running]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2600);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const addTask = (newTask) => {
+    setTasks((prev) => [newTask, ...prev]);
+    setToast(`Ticket raised · Room ${newTask.room}`);
+  };
 
   const content = (
     <div className="relative h-full flex flex-col">
@@ -38,12 +73,24 @@ export default function StaffApp({ embedded = false, scale = 1 }) {
           </button>
         </div>
       )}
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
-        {tab === "dashboard" && <StaffDashboard onOpenTask={(t) => setDetailTask(t)} />}
-        {tab === "list" && <StaffTaskList onOpenTask={(t) => setDetailTask(t)} />}
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28">
+        {tab === "dashboard" && <StaffDashboard tasks={tasks} onOpenTask={setDetailTask} onRaise={() => setShowRaise(true)} />}
+        {tab === "list" && <StaffTaskList tasks={tasks} onOpenTask={setDetailTask} onRaise={() => setShowRaise(true)} />}
         {tab === "map" && <StaffMap />}
         {tab === "handover" && <StaffHandover />}
       </div>
+
+      {/* Floating Raise button on Dashboard + Queue */}
+      {(tab === "dashboard" || tab === "list") && (
+        <button
+          data-testid="staff-raise-fab"
+          onClick={() => setShowRaise(true)}
+          className="absolute bottom-24 right-4 z-30 inline-flex items-center gap-2 bg-[#F47B20] hover:bg-[#d66718] text-white text-xs font-semibold px-4 py-3 rounded-full shadow-[0_12px_30px_rgba(244,123,32,0.45)]"
+        >
+          <Plus className="w-4 h-4" /> Raise for Guest
+        </button>
+      )}
+
       <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-[#A78BD9]/20 px-3 pt-2 pb-5">
         <div className="grid grid-cols-4 gap-1">
           {TABS.map((t) => {
@@ -62,8 +109,20 @@ export default function StaffApp({ embedded = false, scale = 1 }) {
           })}
         </div>
       </div>
+
       <AnimatePresence>
         {detailTask && <TaskDetailModal task={detailTask} onClose={() => setDetailTask(null)} />}
+        {showRaise && <RaiseRequestSheet onClose={() => setShowRaise(false)} onSubmit={(t) => { addTask(t); setShowRaise(false); }} />}
+        {toast && (
+          <motion.div
+            key={toast}
+            initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }}
+            data-testid="staff-toast"
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-[#22C55E] text-white text-xs font-semibold px-4 py-2 rounded-full shadow-brand"
+          >
+            ✓ {toast}
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
@@ -73,10 +132,9 @@ export default function StaffApp({ embedded = false, scale = 1 }) {
 }
 
 /* --------------------- DASHBOARD --------------------- */
-function StaffDashboard({ onOpenTask }) {
+function StaffDashboard({ tasks, onOpenTask, onRaise }) {
   const { phase, running } = useDemo();
-  const tasks = STAFF_TASKS;
-  const nextBest = tasks[0]; // T-401 — Room 412 towels
+  const nextBest = tasks[0];
   const newTaskHighlight = running && phase === 3;
   return (
     <div className="p-4 space-y-4">
@@ -94,7 +152,7 @@ function StaffDashboard({ onOpenTask }) {
       </div>
 
       <div className="grid grid-cols-3 gap-2">
-        <KPIBox label="Open Tasks" value="12" tone="brand" />
+        <KPIBox label="Open Tasks" value={String(tasks.length + 6)} tone="brand" />
         <KPIBox label="SLA Risk" value="2" tone="warn" />
         <KPIBox label="Done Today" value="18" tone="good" />
       </div>
@@ -115,6 +173,7 @@ function StaffDashboard({ onOpenTask }) {
           </div>
           <div className="mt-3 font-display text-lg font-semibold leading-snug">🎯 Room {nextBest.room} — {nextBest.type}</div>
           <div className="text-xs text-white/80 mt-1">{nextBest.guest} {nextBest.vip && "· VIP"} · {nextBest.distance} · SLA {nextBest.slaMin}m</div>
+          <div className="mt-2"><DeptBadge dept={nextBest.dept} dark /></div>
           <div className="mt-4 flex items-center justify-between">
             <div className="text-[11px] text-white/70">AI Priority <span className="text-white font-semibold">{nextBest.priority}</span></div>
             <span className="inline-flex items-center gap-1.5 bg-[#F47B20] text-white text-xs font-semibold px-4 py-2 rounded-full">
@@ -130,10 +189,21 @@ function StaffDashboard({ onOpenTask }) {
           <span className="text-[10px] text-[#6B6478]">SLA · proximity · impact</span>
         </div>
         <div className="space-y-2">
-          {tasks.slice(0, 3).map((t) => <TaskCard key={t.id} t={t} onOpen={() => onOpenTask(t)} />)}
+          {tasks.slice(0, 4).map((t) => <TaskCard key={t.id} t={t} onOpen={() => onOpenTask(t)} />)}
         </div>
       </div>
     </div>
+  );
+}
+
+function DeptBadge({ dept, dark = false }) {
+  const tone = dark
+    ? "bg-white/15 text-white border-white/25"
+    : DEPT_COLOR[dept] || "bg-[#F8F6FC] text-[#5B2C91] border-[#A78BD9]/30";
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide border ${tone}`}>
+      {dept}
+    </span>
   );
 }
 
@@ -167,11 +237,15 @@ function TaskCard({ t, onOpen }) {
         {t.priority}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <div className="font-semibold text-[#1F1B2E] text-sm leading-tight truncate">Room {t.room} · {t.type}</div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="font-semibold text-[#1F1B2E] text-sm leading-tight">Room {t.room} · {t.type}</div>
           {t.vip && <span className="text-[9px] font-bold text-[#F47B20] bg-[#F47B20]/10 px-1.5 py-0.5 rounded">VIP</span>}
         </div>
-        <div className="text-[11px] text-[#6B6478] mt-0.5 flex items-center gap-2">
+        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+          <DeptBadge dept={t.dept} />
+          <span className="text-[10px] text-[#6B6478]">· {t.guest}</span>
+        </div>
+        <div className="text-[11px] text-[#6B6478] mt-1 flex items-center gap-2">
           <Clock className="w-3 h-3" /> SLA {t.slaMin}m · ETA {t.etaMin}m
           <MapPin className="w-3 h-3 ml-1" /> {t.distance}
         </div>
@@ -182,17 +256,15 @@ function TaskCard({ t, onOpen }) {
 }
 
 /* --------------------- TASK LIST --------------------- */
-function StaffTaskList({ onOpenTask }) {
+function StaffTaskList({ tasks, onOpenTask }) {
   const [filter, setFilter] = useState("all");
-  const filters = ["all", "Housekeeping", "Maintenance", "Room Service"];
-  const filtered = STAFF_TASKS.filter((t) => filter === "all" || t.dept === filter);
+  const filters = ["all", "Housekeeping", "Maintenance", "Room Service", "Front Desk"];
+  const filtered = tasks.filter((t) => filter === "all" || t.dept === filter);
   return (
     <div className="p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="font-display font-semibold text-lg text-[#1F1B2E]">Task Queue</div>
-          <div className="text-[11px] text-[#6B6478] flex items-center gap-1"><SparkleDot className="w-3 h-3" /> AI-ranked by SLA, distance, impact</div>
-        </div>
+      <div>
+        <div className="font-display font-semibold text-lg text-[#1F1B2E]">Task Queue</div>
+        <div className="text-[11px] text-[#6B6478] flex items-center gap-1"><SparkleDot className="w-3 h-3" /> AI-ranked by SLA, distance, impact</div>
       </div>
       <div className="flex gap-2 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-1">
         {filters.map((f) => (
@@ -213,11 +285,11 @@ function StaffTaskList({ onOpenTask }) {
   );
 }
 
-/* --------------------- TASK DETAIL + COPILOT --------------------- */
+/* --------------------- TASK DETAIL · POLYMORPHIC --------------------- */
 function TaskDetailModal({ task, onClose }) {
-  const [checklist, setChecklist] = useState(AC_CHECKLIST);
   const [copilot, setCopilot] = useState(false);
-  const toggle = (id) => setChecklist((cl) => cl.map((i) => i.id === id ? { ...i, done: !i.done } : i));
+  const Icon = KIND_ICON[task.kind] || Package;
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/50 z-50">
       <motion.div
@@ -226,40 +298,28 @@ function TaskDetailModal({ task, onClose }) {
         className="absolute bottom-0 left-0 right-0 max-h-[90%] bg-[#F8F6FC] rounded-t-3xl flex flex-col"
       >
         <div className="px-5 py-4 bg-brand-gradient text-white rounded-t-3xl">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <div className="text-[10px] uppercase tracking-widest text-white/70">Task · {task.id}</div>
-              <div className="font-display font-semibold text-lg mt-1">Room {task.room} — {task.type}</div>
-              <div className="text-xs text-white/80 mt-0.5">{task.guest} · {task.distance}</div>
+              <div className="font-display font-semibold text-lg mt-1 leading-tight truncate">Room {task.room} — {task.type}</div>
+              <div className="text-xs text-white/80 mt-0.5 truncate">{task.guest} · {task.distance}</div>
+              <div className="mt-2"><DeptBadge dept={task.dept} dark /></div>
             </div>
-            <button data-testid="task-close" onClick={onClose} className="text-white/80"><X className="w-5 h-5" /></button>
+            <button data-testid="task-close" onClick={onClose} className="text-white/80 shrink-0"><X className="w-5 h-5" /></button>
           </div>
-          <div className="mt-3 flex items-center gap-2 text-xs">
+          <div className="mt-3 flex items-center gap-2 text-xs flex-wrap">
             <span className="bg-white/15 px-2 py-1 rounded-full">SLA {task.slaMin}m</span>
             <span className="bg-white/15 px-2 py-1 rounded-full">ETA {task.etaMin}m</span>
             <span className="bg-[#F47B20] px-2 py-1 rounded-full font-semibold">Priority {task.priority}</span>
           </div>
         </div>
-        <div className="overflow-y-auto hide-scrollbar p-5 space-y-5">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <div className="font-display font-semibold text-sm text-[#1F1B2E]">AI Diagnostic Checklist</div>
-              <AIBadge label="Auto-generated" />
-            </div>
-            <div className="bg-white rounded-2xl border border-[#A78BD9]/15 divide-y divide-[#A78BD9]/15">
-              {checklist.map((c) => (
-                <button
-                  key={c.id}
-                  data-testid={`checklist-${c.id}`}
-                  onClick={() => toggle(c.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left"
-                >
-                  {c.done ? <CheckCircle2 className="w-5 h-5 text-[#22C55E] shrink-0" /> : <Circle className="w-5 h-5 text-[#A78BD9] shrink-0" />}
-                  <span className={`text-sm ${c.done ? "line-through text-[#6B6478]" : "text-[#1F1B2E]"}`}>{c.text}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+
+        <div className="overflow-y-auto hide-scrollbar p-5 space-y-4">
+          {task.kind === "delivery" && <DeliveryPanel task={task} />}
+          {task.kind === "food" && <FoodPanel task={task} />}
+          {task.kind === "checkout" && <ChecklistPanel title="Checkout Checklist" items={CHECKOUT_CHECKLIST} aiLabel="SOP-bound" />}
+          {task.kind === "diagnostic" && <ChecklistPanel title="AI Diagnostic Checklist" items={AC_CHECKLIST} aiLabel="Auto-generated" />}
+          {task.kind === "diagnostic_short" && <ChecklistPanel title="Quick Fix Steps" items={WIFI_STEPS} aiLabel="Auto-generated" />}
 
           <div className="grid grid-cols-2 gap-3">
             <button data-testid="copilot-btn" onClick={() => setCopilot(true)} className="bg-white rounded-2xl p-4 border border-[#A78BD9]/15 text-left">
@@ -282,18 +342,235 @@ function TaskDetailModal({ task, onClose }) {
   );
 }
 
+function DeliveryPanel({ task }) {
+  const d = task.details || {};
+  const [steps, setSteps] = useState(DELIVERY_STEPS.map((s, i) => ({ ...s, done: i === 0 })));
+  const Icon = KIND_ICON[task.kind] || Package;
+  return (
+    <>
+      <div className="bg-white rounded-2xl border border-[#A78BD9]/15 p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Icon className="w-4 h-4 text-[#5B2C91]" />
+            <span className="text-sm font-semibold text-[#1F1B2E]">Items to deliver</span>
+          </div>
+          <AIBadge label="Auto-packed" />
+        </div>
+        <ul className="space-y-2">
+          {(d.items || []).map((it) => (
+            <li key={it.name} className="flex items-center justify-between text-sm">
+              <span className="text-[#1F1B2E]">{it.name}</span>
+              <span className="text-[#5B2C91] font-semibold">×{it.qty}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-3 pt-3 border-t border-[#A78BD9]/15 text-xs text-[#6B6478]">
+          <div className="flex items-center gap-1.5"><MapPin className="w-3 h-3" /> Pickup: <span className="font-semibold text-[#1F1B2E]">{d.pickup}</span></div>
+          {d.note && <div className="mt-1.5 flex items-start gap-1.5"><SparkleDot className="w-3 h-3 mt-0.5" /> <span className="italic">{d.note}</span></div>}
+        </div>
+      </div>
+      <StepFlow steps={steps} setSteps={setSteps} title="Delivery flow" />
+    </>
+  );
+}
+
+function FoodPanel({ task }) {
+  const d = task.details || {};
+  const [steps, setSteps] = useState(FOOD_STEPS.map((s, i) => ({ ...s, done: i === 0 })));
+  return (
+    <>
+      <div className="bg-white rounded-2xl border border-[#A78BD9]/15 p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2"><Utensils className="w-4 h-4 text-[#7B3FBF]" /><span className="text-sm font-semibold text-[#1F1B2E]">Order details</span></div>
+          <AIBadge label="From PMS" />
+        </div>
+        <div className="text-sm text-[#1F1B2E] font-semibold leading-snug">{d.order}</div>
+        <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-[#6B6478]">
+          <div>Ticket <div className="font-semibold text-[#1F1B2E]">{d.ticket}</div></div>
+          <div>Setup <div className="font-semibold text-[#1F1B2E]">{d.table}</div></div>
+          <div>Pickup <div className="font-semibold text-[#1F1B2E]">{d.pickup}</div></div>
+          <div>Dietary <div className="font-semibold text-[#F47B20]">{d.diet}</div></div>
+        </div>
+      </div>
+      <StepFlow steps={steps} setSteps={setSteps} title="Service flow" />
+    </>
+  );
+}
+
+function StepFlow({ steps, setSteps, title }) {
+  const toggle = (id) => setSteps((s) => s.map((x) => x.id === id ? { ...x, done: !x.done } : x));
+  return (
+    <div className="bg-white rounded-2xl border border-[#A78BD9]/15 overflow-hidden">
+      <div className="px-4 py-3 flex items-center justify-between border-b border-[#A78BD9]/15">
+        <span className="text-sm font-semibold text-[#1F1B2E]">{title}</span>
+        <AIBadge label="Live tracked" />
+      </div>
+      <div className="divide-y divide-[#A78BD9]/15">
+        {steps.map((c) => (
+          <button
+            key={c.id}
+            data-testid={`flow-step-${c.id}`}
+            onClick={() => toggle(c.id)}
+            className="w-full flex items-center gap-3 px-4 py-3 text-left"
+          >
+            {c.done ? <CheckCircle2 className="w-5 h-5 text-[#22C55E] shrink-0" /> : <Circle className="w-5 h-5 text-[#A78BD9] shrink-0" />}
+            <span className={`text-sm ${c.done ? "line-through text-[#6B6478]" : "text-[#1F1B2E]"}`}>{c.text}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ChecklistPanel({ title, items, aiLabel }) {
+  const [list, setList] = useState(items);
+  const toggle = (id) => setList((cl) => cl.map((i) => i.id === id ? { ...i, done: !i.done } : i));
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <div className="font-display font-semibold text-sm text-[#1F1B2E]">{title}</div>
+        <AIBadge label={aiLabel} />
+      </div>
+      <div className="bg-white rounded-2xl border border-[#A78BD9]/15 divide-y divide-[#A78BD9]/15">
+        {list.map((c) => (
+          <button
+            key={c.id}
+            data-testid={`checklist-${c.id}`}
+            onClick={() => toggle(c.id)}
+            className="w-full flex items-center gap-3 px-4 py-3 text-left"
+          >
+            {c.done ? <CheckCircle2 className="w-5 h-5 text-[#22C55E] shrink-0" /> : <Circle className="w-5 h-5 text-[#A78BD9] shrink-0" />}
+            <span className={`text-sm ${c.done ? "line-through text-[#6B6478]" : "text-[#1F1B2E]"}`}>{c.text}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* --------------------- RAISE REQUEST --------------------- */
+function RaiseRequestSheet({ onClose, onSubmit }) {
+  const [room, setRoom] = useState(ROOMS_FOR_RAISE[0].room);
+  const [typeKey, setTypeKey] = useState("towel");
+  const [note, setNote] = useState("");
+
+  const submit = () => {
+    const reqType = RAISE_REQUEST_TYPES.find((r) => r.key === typeKey);
+    const guest = ROOMS_FOR_RAISE.find((r) => r.room === room)?.guest || "Guest";
+    const newTask = {
+      id: `T-${Math.floor(Math.random() * 900 + 100)}`,
+      room,
+      guest,
+      type: reqType.label,
+      dept: reqType.dept,
+      priority: 70 + Math.floor(Math.random() * 15),
+      priorityLevel: "med",
+      slaMin: 20,
+      etaMin: 9,
+      distance: `Floor ${room.charAt(0)}`,
+      vip: false,
+      kind: reqType.kind,
+      details:
+        reqType.kind === "delivery"
+          ? { items: [{ name: reqType.label, qty: 1 }], pickup: "Auto-routed", note: note || "Raised by staff" }
+          : reqType.kind === "food"
+          ? { order: note || "Custom order", table: "Tray service", ticket: `RS-#${Math.floor(Math.random() * 9000)}`, diet: "—", pickup: "Kitchen pass" }
+          : undefined,
+    };
+    onSubmit(newTask);
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/50 z-50">
+      <motion.div
+        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 30 }}
+        className="absolute bottom-0 left-0 right-0 max-h-[88%] bg-[#F8F6FC] rounded-t-3xl flex flex-col"
+      >
+        <div className="px-5 py-4 bg-brand-gradient text-white rounded-t-3xl flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2"><ClipboardEdit className="w-4 h-4" /><AIBadge label="On behalf of Guest" className="!bg-white/10 !border-white/25 !text-white" /></div>
+            <div className="font-display font-semibold text-lg mt-1">Raise a Request</div>
+            <div className="text-xs text-white/80">AI will auto-classify, route, and notify the guest.</div>
+          </div>
+          <button data-testid="raise-close" onClick={onClose} className="text-white/80"><X className="w-5 h-5" /></button>
+        </div>
+
+        <div className="overflow-y-auto hide-scrollbar p-5 space-y-4">
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-[#7B3FBF] font-semibold mb-2">Select room</div>
+            <div className="grid grid-cols-3 gap-2">
+              {ROOMS_FOR_RAISE.map((r) => (
+                <button
+                  key={r.room}
+                  data-testid={`raise-room-${r.room}`}
+                  onClick={() => setRoom(r.room)}
+                  className={`rounded-xl p-2.5 text-left border transition-colors ${room === r.room ? "bg-[#5B2C91] text-white border-[#5B2C91]" : "bg-white text-[#1F1B2E] border-[#A78BD9]/25"}`}
+                >
+                  <div className="text-sm font-bold">{r.room}</div>
+                  <div className={`text-[10px] truncate ${room === r.room ? "text-white/80" : "text-[#6B6478]"}`}>{r.guest}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-[#7B3FBF] font-semibold mb-2">Request type</div>
+            <div className="flex flex-wrap gap-2">
+              {RAISE_REQUEST_TYPES.map((r) => (
+                <button
+                  key={r.key}
+                  data-testid={`raise-type-${r.key}`}
+                  onClick={() => setTypeKey(r.key)}
+                  className={`px-3 py-2 rounded-full text-xs font-semibold transition-colors border ${typeKey === r.key ? "bg-[#F47B20] text-white border-[#F47B20]" : "bg-white text-[#5B2C91] border-[#A78BD9]/30"}`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-[#7B3FBF] font-semibold mb-2">Note (optional)</div>
+            <textarea
+              data-testid="raise-note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={2}
+              placeholder="e.g. Extra pillow + 1 bottle of still water"
+              className="w-full bg-white rounded-2xl border border-[#A78BD9]/25 px-4 py-3 text-sm outline-none focus:border-[#5B2C91]/60"
+            />
+          </div>
+
+          <div className="rounded-2xl bg-gradient-to-br from-[#5B2C91]/10 to-[#F47B20]/10 border border-[#F47B20]/20 p-3 flex items-start gap-2">
+            <SparkleDot className="w-4 h-4 mt-0.5" />
+            <div className="text-[11px] text-[#6B6478] leading-relaxed">
+              AI will classify, set priority and route this to the right runner. Guest will receive a confirmation with live ETA.
+            </div>
+          </div>
+
+          <button data-testid="raise-submit" onClick={submit} className="w-full bg-[#F47B20] hover:bg-[#d66718] text-white font-semibold py-3.5 rounded-full text-sm">
+            Raise & Dispatch
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* --------------------- COPILOT --------------------- */
 function CopilotChat({ onClose }) {
   const [input, setInput] = useState("");
   const [msgs, setMsgs] = useState([
     { from: "ai", text: "Hi Linda — I'm your AI Copilot. Ask anything about SOPs, manuals, or escalation." },
-    { from: "user", text: "How do I reset this AC model?" },
-    { from: "ai", text: "Hold the MODE + TEMP↑ for 5s until the panel beeps twice. If noise persists, mark sub-task 4 and escalate to HVAC ext. 412." },
+    { from: "user", text: "How do I handle this request?" },
+    { from: "ai", text: "Follow the steps in the panel above. If the guest is VIP, add a courtesy item and offer a thank-you note." },
   ]);
   const send = () => {
     if (!input.trim()) return;
     setMsgs((m) => [...m, { from: "user", text: input }]);
     setInput("");
-    setTimeout(() => setMsgs((m) => [...m, { from: "ai", text: "Got it — pulling SOP §3.2. Filter cleaning interval is every 30 days; last logged 41 days ago. I recommend swapping the filter as well." }]), 700);
+    setTimeout(() => setMsgs((m) => [...m, { from: "ai", text: "Got it — pulling the relevant SOP and routing context. I'll log this to your shift summary too." }]), 700);
   };
   return (
     <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30 }} className="absolute inset-0 bg-[#F8F6FC] flex flex-col">
@@ -343,16 +620,13 @@ function StaffMap() {
         <div className="text-[11px] text-[#6B6478] flex items-center gap-1"><SparkleDot className="w-3 h-3" /> AI-optimized for SLA + walking distance</div>
       </div>
       <div className="relative h-72 rounded-2xl bg-gradient-to-br from-[#F8F6FC] to-white border border-[#A78BD9]/20 overflow-hidden">
-        {/* corridor */}
         <div className="absolute left-[10%] right-[10%] top-1/2 -translate-y-1/2 h-12 bg-[#A78BD9]/15 rounded-md border-y border-[#A78BD9]/30" />
-        {/* room blocks */}
         <div className="absolute left-[10%] right-[10%] top-[8%] h-1/3 grid grid-cols-5 gap-1">
           {[401, 403, 405, 407, 409].map((r) => <div key={r} className="bg-white border border-[#A78BD9]/30 rounded grid place-items-center text-[9px] text-[#6B6478]">{r}</div>)}
         </div>
         <div className="absolute left-[10%] right-[10%] bottom-[8%] h-1/3 grid grid-cols-5 gap-1">
           {[412, 414, 416, 418, 420].map((r) => <div key={r} className={`border rounded grid place-items-center text-[9px] ${r === 412 ? "bg-[#F47B20]/15 border-[#F47B20] text-[#F47B20] font-bold" : "bg-white border-[#A78BD9]/30 text-[#6B6478]"}`}>{r}</div>)}
         </div>
-        {/* optimized path */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
           <path d="M 12 80 Q 30 60 30 50 T 60 50 T 85 50" fill="none" stroke="#F47B20" strokeWidth="1.5" strokeDasharray="2 2" />
         </svg>

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   Home, ClipboardList, MessageCircle, User, Mic, Send, ChevronLeft,
-  Star, MapPin, Car, Train, Bus, Bell, CheckCircle2, Clock, PlayCircle, ArrowRight, X, CloudRain,
+  Star, MapPin, Car, Train, Bus, Bell, CheckCircle2, Clock, PlayCircle, ArrowRight, X, CloudRain, Ticket,
 } from "lucide-react";
 import { PhoneFrame, useTypewriter } from "../PhoneFrame";
 import { AIBadge, SparkleDot } from "../SparkleBadge";
@@ -24,6 +24,7 @@ export default function GuestApp({ embedded = false, scale = 1 }) {
   const [tab, setTab] = useState("home");
   const [showNudge, setShowNudge] = useState(false);
   const [showRecs, setShowRecs] = useState(false);
+  const [ticketRaised, setTicketRaised] = useState(null);
   const navigate = useNavigate();
   const { phase, running } = useDemo();
 
@@ -41,6 +42,15 @@ export default function GuestApp({ embedded = false, scale = 1 }) {
     return () => clearTimeout(t);
   }, [embedded]);
 
+  // Handle the "ticket raised" interaction → popup + redirect to Requests
+  const handleTicketRaised = (summary) => {
+    setTicketRaised(summary);
+    setTimeout(() => {
+      setTicketRaised(null);
+      setTab("requests");
+    }, 2400);
+  };
+
   const content = (
     <div className="relative h-full flex flex-col">
       {!embedded && (
@@ -57,7 +67,7 @@ export default function GuestApp({ embedded = false, scale = 1 }) {
       <div className="flex-1 overflow-y-auto hide-scrollbar pb-24">
         {tab === "home" && <GuestHome onOpenChat={() => setTab("chat")} onShowRecs={() => setShowRecs(true)} />}
         {tab === "requests" && <GuestRequests />}
-        {tab === "chat" && <GuestConcierge />}
+        {tab === "chat" && <GuestConcierge onTicketRaised={handleTicketRaised} />}
         {tab === "profile" && <GuestProfile />}
       </div>
 
@@ -116,6 +126,36 @@ export default function GuestApp({ embedded = false, scale = 1 }) {
       {/* Recommendations modal */}
       <AnimatePresence>
         {showRecs && <GuestRecommendations onClose={() => setShowRecs(false)} />}
+      </AnimatePresence>
+
+      {/* Ticket Raised confirmation */}
+      <AnimatePresence>
+        {ticketRaised && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 bg-black/45 backdrop-blur-sm flex items-center justify-center px-6"
+            data-testid="ticket-raised-overlay"
+          >
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ type: "spring", damping: 20 }}
+              className="bg-white rounded-3xl p-6 shadow-brand-lg w-full max-w-[300px] text-center relative overflow-hidden"
+            >
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#5B2C91] via-[#F47B20] to-[#5B2C91] ai-shimmer" />
+              <motion.div
+                initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", damping: 12, delay: 0.1 }}
+                className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-[#22C55E] to-[#16a34a] grid place-items-center shadow-brand-lg"
+              >
+                <CheckCircle2 className="w-9 h-9 text-white" strokeWidth={2.5} />
+              </motion.div>
+              <div className="font-display font-semibold text-lg text-[#1F1B2E] mt-4">Ticket Raised!</div>
+              <div className="text-xs text-[#6B6478] mt-1.5 leading-relaxed">{ticketRaised}</div>
+              <div className="mt-4 inline-flex items-center gap-1.5 bg-[#F8F6FC] text-[#5B2C91] text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full">
+                <Ticket className="w-3 h-3" /> Redirecting to My Requests…
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
@@ -193,7 +233,7 @@ function GuestHome({ onOpenChat, onShowRecs }) {
 /* --------------------- CONCIERGE (HERO) --------------------- */
 const DEMO_PROMPT = "Need extra towels and please fix the AC, also can I get late checkout?";
 
-function GuestConcierge() {
+function GuestConcierge({ onTicketRaised }) {
   const { phase, running } = useDemo();
   const [lang, setLang] = useState("EN");
   const [input, setInput] = useState("");
@@ -239,11 +279,16 @@ function GuestConcierge() {
 
   const send = () => {
     if (!input.trim()) return;
-    setMessages((m) => [...m, { from: "user", text: input }]);
-    const txt = input;
+    const userMsg = input;
+    setMessages((m) => [...m, { from: "user", text: userMsg }]);
     setInput("");
     setTimeout(() => {
-      setMessages((m) => [...m, { from: "ai", text: `Got it! I'm dispatching that now. ✨ I'll keep you posted right here.` }]);
+      setMessages((m) => [...m, { from: "ai", text: `Got it! I'm dispatching that now. ✨ I'll keep you posted in My Requests.` }]);
+      // Fire the ticket-raised popup → parent will redirect to Requests tab
+      if (onTicketRaised) {
+        const summary = userMsg.length > 60 ? userMsg.slice(0, 57) + "…" : userMsg;
+        setTimeout(() => onTicketRaised(`"${summary}" — dispatched. Track live ETA in My Requests.`), 600);
+      }
     }, 700);
   };
 
