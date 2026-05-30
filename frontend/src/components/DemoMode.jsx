@@ -73,7 +73,7 @@ export default function DemoMode() {
             className="mb-8"
           >
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-[#F47B20] font-semibold">
-              <Sparkles className="w-3.5 h-3.5" /> Investor Demo · Step {phase}/8
+              <Sparkles className="w-3.5 h-3.5" /> Demo · Step {phase}/8
             </div>
             <h1 className="font-display font-bold text-3xl md:text-4xl mt-2 tracking-tight">{current.title}</h1>
             <p className="text-white/70 mt-1 max-w-2xl">{current.subtitle}</p>
